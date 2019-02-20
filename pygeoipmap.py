@@ -13,6 +13,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import pygeoip
+import geoip2.database
 
 
 def get_ip(ip_file):
@@ -48,14 +49,18 @@ def geoip_lat_lon(gi, ip_list=[], lats=[], lons=[]):
     print("Processing {} IPs...".format(len(ip_list)))
     for ip in ip_list:
         try:
-            r = gi.record_by_addr(ip)
+            #r = gi.record_by_addr(ip)
+            r = gi.city(ip)
         except Exception:
             print("Unable to locate IP: %s" % ip)
             continue
         if r is not None:
-            print("%s {country_code} {latitude}, {longitude}".format(**r) % ip)
-            lats.append(r['latitude'])
-            lons.append(r['longitude'])
+            r1 = {'country_code': r.country.iso_code, 'latitude': r.location.latitude, 'longitude': r.location.longitude}
+            print("%s {country_code} {latitude}, {longitude}".format(**r1) % ip)
+            lats.append(r1['latitude'])
+            lons.append(r1['longitude'])
+            #lats.append(r.location.latitude)
+            #lons.append(r.location.longitude)
     return lats, lons
 
 
@@ -109,7 +114,7 @@ def main():
     parser.add_argument('-a', '--apikey', help='API-KEY from ipstack.com')
     parser.add_argument('-f', '--format', default='ip', choices=['ip', 'csv'], help='Format of the input file.')
     parser.add_argument('-s', '--service', default='f', choices=['f','m'], help='Geolocation service (f=ipstack, m=MaxMind local database)')
-    parser.add_argument('-db', '--db', default='./GeoLiteCity.dat', help='Full path to MaxMind database file (default = ./GeoLiteCity.dat)')
+    parser.add_argument('-db', '--db', default='./GeoLite2-City.mmdb', help='Full path to MaxMind database file (default = ./GeoLite2-City.mmdb)')
     parser.add_argument('--extents', default=None, help='Extents for the plot (west/east/south/north). Default global.')
     args = parser.parse_args()
 
@@ -118,7 +123,8 @@ def main():
     if args.format == 'ip':
         ip_list = get_ip(args.input)
         if args.service == 'm':
-            gi = pygeoip.GeoIP(args.db)
+            #gi = pygeoip.GeoIP(args.db)
+            gi = geoip2.database.Reader(args.db)
             lats, lons = geoip_lat_lon(gi, ip_list)
         else:  # default service
             if args.apikey:
