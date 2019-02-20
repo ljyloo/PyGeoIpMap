@@ -11,7 +11,7 @@ A Python script to show where IP addresses are coming from by plotting them on a
 * [matplotlib](http://matplotlib.org/)
 * [Basemap](http://matplotlib.org/basemap/)
 * [pygeoip](https://pypi.python.org/pypi/pygeoip)
-* [geoip2](https://pypi.python.org/pypi/pygeoip)
+* [geoip2](https://github.com/maxmind/GeoIP2-python)
 
 PyGeoIpMap can be installed along with its dependencies easily on Fedora Linux with the following command:
 
